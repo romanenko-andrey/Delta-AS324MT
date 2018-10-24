@@ -1,0 +1,8 @@
+{
+    "name": "delta-chat",
+    "version": "0.0.1",
+    "description": "communication with DELTA AS324MT",
+    "dependencies": {
+        "express": "^4.16.3"
+    }
+}
