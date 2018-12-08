@@ -11,11 +11,14 @@ const http = require('http');
 const http_server = http.createServer(app);
 
 const settings = require('./settings');
-console.log(settings);
 
 const deltaIP = settings.deltaIP;
-var deltaRegisters = {'udp1_status' : 'stop', 'udp2_status' : 'stop'};
-var real_time_sensors = {};
+var deltaRegisters = {
+    'udp1_status' : 'stop', 
+    'udp2_status' : 'stop', 
+    'udp3_status' : 'stop'
+  };
+var real_time_sensors = {'udp4_status' : 'stop'};
 
 var udp1 = require('./udp.server')(deltaRegisters, 'udp1');
 var udp2 = require('./udp.server')(deltaRegisters, 'udp2');
@@ -64,16 +67,17 @@ udp3.server.bind(settings.UDP3_PORT);
 udp4.server.bind(settings.UDP4_PORT);
 
 var log_timer = setInterval( () => {
-  deltaRegisters.udp1_status = test_connection(deltaRegisters.udp1_status);
-  deltaRegisters.udp2_status = test_connection(deltaRegisters.udp2_status);
+  var test_connection = (stat) => stat == "active" ? "checking" : "stop";
+  var dr = deltaRegisters;
+  var rs = real_time_sensors;
+
+  dr.udp1_status = test_connection( dr.udp1_status );
+  dr.udp2_status = test_connection( dr.udp2_status );
+  dr.udp3_status = test_connection( dr.udp3_status );
+  rs.udp4_status = test_connection( rs.udp4_status );
 }, settings.LOG_TIMER_INTERVAL);
 
-var test_connection = (udp_status) => {
-  console.log(udp_status);
-  if (udp_status == 'active') {
-    return 'checking';
-  }
-  return 'stop';
-};
+
+
 
 

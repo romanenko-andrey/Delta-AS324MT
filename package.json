@@ -4,7 +4,8 @@
     "description": "communication with DELTA AS324MT",
     "dependencies": {
         "dotenv-safe": "^6.1.0",
-        "express": "^4.16.3"
+        "express": "^4.16.3",
+        "ws": "^6.1.2"
     },
     "devDependencies": {
         "eslint": "^5.8.0",
