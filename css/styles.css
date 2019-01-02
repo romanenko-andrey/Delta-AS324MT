@@ -1,3 +1,10 @@
+#app{
+
+    width: 100vw; height: 100vh;
+    padding: 20px 50px 20px 50px;
+    font: 1rem/1.175 "BlinkMacSystemFont", -apple-system, "Roboto", sans-serif;
+}
+
 .sensor-line {
     border: 1px solid black;
 }
@@ -7,4 +14,80 @@
 }
 tr td, tr th {
     text-align: center
+}
+
+#digital-outputs {
+	display: grid;
+	/* grid:8x7 */
+	grid-template-areas:
+		". . . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . .";
+  	padding: 5px; grid-gap: 16px;
+}
+
+
+#digital-inputs {
+	display: grid;
+	/* grid:16x1 */
+	grid-template-areas:
+		". . . . . . . . . . . . . . . .";
+  	padding: 5px; grid-gap: 16px;
+}
+
+img {
+	width: 3.5rem; height: 3.5rem;
+	vertical-align: calc(-0.12109375em);
+}
+
+.grid-item {
+	display: grid;
+	_grid-template-rows: 65% 35%;
+	background: whitesmoke;
+    border-radius: 4px; 
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 10px 60px;
+    transition: transform 500ms;
+}
+
+.grid-item:hover {
+	transition: transform 500ms;
+	transform: scale(1.1);
+}
+
+.grid-cell--top, .grid-cell--bottom, .grid-cell--round {
+	display: flex;
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    padding: 5px;
+}
+
+.grid-cell--round {
+    border-radius: 50% 50% 50% 50%; 
+    font-weight: bold
+}
+
+.grid-cell--top    { 
+    border-radius: 4px 4px 0 0; 
+    font-weight: bold
+}
+
+.grid-cell--bottom { 
+    font-weight: 400; 
+    font-size: 0.75rem; 
+}
+
+.bounce { 
+    animation: bounce 1s; 
+}
+
+@keyframes bounce {
+	  0% { transform: rotate(  0deg) scale(1.0); }
+	 33% { transform: rotate( 12deg) scale(1.2); }
+	 67% { transform: rotate(-12deg) scale(0.8); }
+	100% { transform: rotate(  0deg) scale(1.0); }
 }

@@ -1,7 +1,5 @@
 var path = require('path');
 
-console.log(path.join(__dirname, '', '.env'));
-
 require('dotenv-safe').load({
   allowEmptyValues: true,
   path: path.join(__dirname, '', '.env'),
@@ -15,7 +13,8 @@ const settings = {
   UDP2_PORT : process.env.UDP2_PORT, 
   UDP3_PORT : process.env.UDP3_PORT, 
   UDP4_PORT : process.env.UDP4_PORT, 
-  LOG_TIMER_INTERVAL : process.env.LOG_TIMER_INTERVAL 
+  LOG_TIMER_INTERVAL : process.env.LOG_TIMER_INTERVAL,
+  WS_PORT   : process.env.WS_PORT 
 };
 
 module.exports = settings;

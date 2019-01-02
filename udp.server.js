@@ -21,7 +21,7 @@ module.exports = function(work_registers, udp_name) {
   udp_module.server.on('message', (msg, rinfo) => {
     var intViewUDP = handlerFunction(msg, work_registers);
     work_registers[udp_name + '_status'] = 'active';
-    console.log(`server got from ${udp_name} : ${rinfo.address}:${rinfo.port} - ${rinfo.size} bytes: ${intViewUDP}`);
+    //console.log(`server got from ${udp_name} : ${rinfo.address}:${rinfo.port} - ${rinfo.size} bytes: ${intViewUDP}`);
   });
 
   udp_module.server.on('listening', () => {

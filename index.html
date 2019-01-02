@@ -4,22 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>DELTA AS324MT</title>
-    <!--<link rel="stylesheet" href="css/bootstrap.min.css">-->
-
-
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body >
-    <b-container id="app" class="b-container">
-      <!---
-      <app-nav></app-nav>
-      <app-view>
-        <app-sidebar></app-sidebar>
-        <app-content></app-content>
-      </app-view>
-      -->
+    <section id="app" class="b-container">
+
    
       <h1>{{ message }}</h1>
    
@@ -52,13 +43,36 @@
         </tbody>
       </table>
       
+
+      <hr class="my-2">
+      <h3>WS INPUTS STATE</h3>
+      {{ ws_data }}
+
       <hr class="my-2">
       <h3>DIGITAL INPUTS STATE</h3>
       {{ digitalInputs }}
 
+      <div id="digital-inputs" class="mt-2">
+        <digital-input
+          v-for="input in deltaInputs"
+          :input="input"
+          :key="input.id"
+        ></digital-input>
+      </div>
+
+
       <hr class="my-2">
       <h3>DIGITAL OUTPUTS STATE</h3>
       {{ digitalOutputs }}
+
+      <div id="digital-outputs" class="mt-2">
+        <digital-output
+          v-for="output in deltaOutputs"
+          @click.native="changeDOutputState(output)"
+          :output="output"
+          :key="output.id"
+        ></digital-output>
+      </div>
 
       <hr class="my-2">
       <h3>DELTA REGISTERS</h3>
@@ -70,25 +84,18 @@
         :small=true
         :hover=true>
       </b-table>
-      <!--
-      <b-container  class="mt-2">
-        <sensor-line
-          v-for="sensorData in deltaValues"
-          v-bind:sensor="sensorData"
-          v-bind:key="sensorData.id">
-        </sensor-line>
-      </b-container>
-    -->
-  
+   
+    </section>
 
-    </b-container>
 
-    
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
     <script src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
     <script src="js/sensors.settings.js"></script>
+  
+    <script src="js/components/digital.output.js"></script>
+    <script src="js/components/digital.input.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

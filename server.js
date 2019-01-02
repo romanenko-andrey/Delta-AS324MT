@@ -3,27 +3,31 @@
 
 'use strict';
 
+const settings = require('./settings');
+var moment = require('moment');
+
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const app = express();
 const http = require('http');
 const http_server = http.createServer(app);
-
-const settings = require('./settings');
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: settings.WS_PORT})
+var ws_connection;
 
 const deltaIP = settings.deltaIP;
-var deltaRegisters = {
+const deltaRegisters = {
     'udp1_status' : 'stop', 
     'udp2_status' : 'stop', 
     'udp3_status' : 'stop'
   };
-var real_time_sensors = {'udp4_status' : 'stop'};
 
-var udp1 = require('./udp.server')(deltaRegisters, 'udp1');
-var udp2 = require('./udp.server')(deltaRegisters, 'udp2');
-var udp3 = require('./udp.server')(deltaRegisters, 'udp3');
-var udp4 = require('./udp.server')(real_time_sensors, 'udp4');
+const real_time_sensors = {'udp4_status' : 'stop'};
+
+const udp1 = require('./udp.server')(deltaRegisters, 'udp1');
+const udp2 = require('./udp.server')(deltaRegisters, 'udp2');
+const udp3 = require('./udp.server')(deltaRegisters, 'udp3');
+const udp4 = require('./udp.server')(real_time_sensors, 'udp4');
 
 function sendDataToDelta(udp, sending_data){
   var udp_info = udp.address();
@@ -66,18 +70,62 @@ udp2.server.bind(settings.UDP2_PORT);
 udp3.server.bind(settings.UDP3_PORT);
 udp4.server.bind(settings.UDP4_PORT);
 
+var c_i = 0;
 var log_timer = setInterval( () => {
   var test_connection = (stat) => stat == "active" ? "checking" : "stop";
   var dr = deltaRegisters;
   var rs = real_time_sensors;
 
+  console.log(moment().format('LTS'), dr.udp1_status, dr.udp2_status, dr.udp3_status, rs.udp4_status);
+
   dr.udp1_status = test_connection( dr.udp1_status );
   dr.udp2_status = test_connection( dr.udp2_status );
   dr.udp3_status = test_connection( dr.udp3_status );
   rs.udp4_status = test_connection( rs.udp4_status );
+
+  if (ws_connection) {
+    c_i += 1;
+    deltaRegisters.ws_count = c_i;
+  }
 }, settings.LOG_TIMER_INTERVAL);
 
+var send_to_ws = function(){
+  if (ws_connection) {
+    ws_connection.send(JSON.stringify(deltaRegisters));
+  }
+}
 
+wss.on('connection', client => {
+  ws_connection = client;
+
+  udp1.server.on('message', (msg, rinfo) => {
+    //console.log(`server got from msg: `);
+    send_to_ws();
+  });
+
+  ws_connection.on('message', data => {
+    console.log(`Received message => ${data}`);
+    var arr = data.split(',').map( (d) => {return parseInt(d)} ); 
+    console.log( arr );
+    
+    if ( arr.length == 5) {
+      sendDataToDelta(udp1.server, arr);
+    }
+  })
+
+  ws_connection.onclose = function() {
+    console.log('echo-protocol Client Closed');
+    ws_connection = null;
+  }
+  
+  ws_connection.send('ho!')
+
+});
+
+
+  
+//console.log(settings.WS_PORT);
+//process.exit(1);
 
 
 

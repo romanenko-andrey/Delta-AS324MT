@@ -1,72 +1,48 @@
-// Определяем новый компонент под именем sensor-item
-Vue.component('sensor-item', {
-  // Компонент sensor-item принимает "props", то есть входные параметры.
-  // Имя входного параметра val.
-  props: ['sensor'],
-  template: '<li>{{ sensor.id }} : {{ sensor.value }} : {{ sensor.name }}</li>'
-});
-
-
-Vue.component('sensor-id', {
-  props: ['sensorID'],
-  template: '<b-col>{{ sensorID }}</b-col>'
-});
-
-Vue.component('sensor-value', {
-  props: ['sensorValue'],
-  template: '<b-col>{{ sensorValue }}</b-col>'
-});
-
-Vue.component('sensor-line2', {
-  props: ['sensor'],
-  template: '<sensor-id v-bind:sensorID=\'sensor.id\'></sensor-id> <sensor-value v-bind:sensorValue=\'sensor.value\'></sensor-value>'
-  
-});
-
-Vue.component('sensor-line', {
-  props: ['sensor'],
-  template: `<b-row v-bind:title=sensor.title>
-               <b-col cols="2" class="sensor-line sensor-id">{{ sensor.id }}</b-col> 
-               <b-col cols="2" class="sensor-line sensor-value">{{ sensor.value }}</b-col> 
-               <b-col class="sensor-line sensor-name">{{ sensor.name }}</b-col> 
-            </b-row>`
-});
-
+const MAX_VALUES_ARRAY_SIZE = 3;
+const WS_URL = 'ws://192.168.1.103:3040'
 
 var app = new Vue({
   el: '#app',
   data: {
-    message: 'Hello from Delta!',
-    v_bind_message: 'Вы загрузили эту страницу: ' + new Date().toLocaleString(),
+    message: 'Hello from Delta!' + new Date().toLocaleString(),
     deltaRegisters: {},
-    digitalInputs: [0,0,0],
-    digitalOutputs: [0,0,0,0,0],
-    deltaValues: [ 
-      { id: 'AI00', value: 0}, 
-      { id: 'AI01', value: 0}, 
-      { id: 'AI02', value: 0}, 
-      { id: 'AI03', value: 0}, 
-      { id: 'AO01', value: 0}, 
-      { id: 'AO02', value: 0}
-    ],
+    digitalInputs: [],
+    digitalOutputs: [],
+    deltaValues: analog_registers_info,
+    deltaOutputs: digital_outputs_info, 
+    deltaInputs: digital_inputs_info, 
+    ws_connection: null,
     status: {delta: 'initialization', udp1_status:'', udp2_status:'', udp3_status:''},
   },
   watch: {
     deltaRegisters: function(newReg, _){
       var vm = this;
       vm.status.delta = 'Delta is Ok!';
+   
       vm.status.udp1_status = newReg.udp1_status;
       vm.status.udp2_status = newReg.udp2_status;
       vm.status.udp3_status = newReg.udp3_status;
-      for (let v of vm.deltaValues){
-        v.value = newReg[v.id];
-      } 
+        
+      vm.deltaValues.forEach(function(dv, i, arr) {
+        arr[i].values.unshift( newReg[dv.id] );
+        arr[i].values.length = MAX_VALUES_ARRAY_SIZE;
+      });
      
-      var int_to_bin = (d) => { return (d + 256).toString(2).substr(1,8); };
-      var d_in = [newReg.DIX0, newReg.DIX1, newReg.DIX2];
+      var int8_to_bin = (d) => { return (d + 256).toString(2).substr(1,8).split('').reverse() };
+      var int16_to_bin = (d) => { return (d + 65536).toString(2).substr(1,16).split('').reverse() };
+
+      var d_in = [newReg.DIX1, newReg.DIX2];
+      vm.digitalInputs = [].concat(...d_in.map( int8_to_bin ));
+        
       var d_out = [newReg.DOY0, newReg.DOY1, newReg.DOY2, newReg.DOY3, newReg.DOY4];
-      vm.digitalInputs = d_in.map( int_to_bin ).join('').split('');
-      vm.digitalOutputs = d_out.map( int_to_bin ).join('').split('');
+      vm.digitalOutputs = [].concat(...d_out.map( int16_to_bin ));
+
+      vm.deltaOutputs.forEach(function(dout, i, arr) {
+        arr[i].state = vm.digitalOutputs[dout.addr];
+      });
+      vm.deltaInputs.forEach(function(dout, i, arr) {
+        arr[i].state = vm.digitalInputs[dout['id'].substr(2,2)-0];
+      });
     }
   },
 
@@ -74,7 +50,9 @@ var app = new Vue({
     message2: function() {
       return this.message + ' ' + this.status.delta;
     },
-
+    ws_data: function() {
+      return this.deltaRegisters.ws_count;
+    }
   },
 
 
@@ -89,17 +67,63 @@ var app = new Vue({
         .catch(function (error) {
           vm.status.delta = 'Error! Can not connect to the server. ' + error;
         });
+    },
+
+    sendNewDOutputState: function(dOut){
+      //send command to Delta
+      var vm = this;
+      vm.digitalOutputs[dOut.addr] = vm.digitalOutputs[dOut.addr] == '1' ? '0' : '1';
+      var bin_s =  vm.digitalOutputs.join('');
+      var make16bNumbers = function(){
+        var arr = [];
+        for (let i=0; i < 5; i++){
+          var s = bin_s.substr( i*16, 16 ).split('').reverse().join('');
+          arr.push( parseInt(s, 2) );
+        }
+        return arr;
+      };
+      vm.ws_connection.send( make16bNumbers() );
+    },
+
+    changeDOutputState: function(dOut){
+
     }
   },
 
   created() {
-    this.deltaValues.forEach(function(dv, i, arr) {
-      arr[i].title = sensors_info[dv.id].title,
-      arr[i].name  = sensors_info[dv.id].name; 
-    });
- 
+    var vm = this;
+
+    vm.ws_connection = new WebSocket(WS_URL);
+    vm.ws_connection.onopen = function() {
+      console.log('WS connection opened')
+      vm.ws_connection.send('Ok') 
+    };
+    vm.ws_connection.onclose = function(eventclose) {
+      console.log('WS connection closed: ' + vm.eventclose)
+    };
+    vm.ws_connection.onmessage = function(msg) {
+      try {
+        console.log('ws <----');
+        vm.deltaRegisters = JSON.parse( msg.data );
+      } catch(e) {
+        console.debug(e); //error
+      }
+      //vm.deltaRegisters = JSON.parse( msg.data );
+    };
+
+    var update_delta_registers = function(delta_register) {
+      delta_register.forEach(function(dv, i, arr) {
+        arr[i].title = sensors_info[dv.id].title,
+        arr[i].name  = sensors_info[dv.id].name; 
+        arr[i].values = [];
+      });
+    };
+
+    update_delta_registers(vm.deltaValues);
+    update_delta_registers(vm.deltaOutputs);
+    update_delta_registers(vm.deltaInputs);
+
   }
 
 });
-
 
