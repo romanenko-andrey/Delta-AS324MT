@@ -91,3 +91,15 @@ img {
 	 67% { transform: rotate(-12deg) scale(0.8); }
 	100% { transform: rotate(  0deg) scale(1.0); }
 }
+
+.output-button-selected-on {
+    border: 3px solid green; 
+}
+
+.output-button-selected-off {
+    border: 3px solid black; 
+}
+
+.analog-input{
+    width: 100px;
+}

@@ -1,4 +1,4 @@
-const analog_registers_info = [ 
+const ANALOG_REG_INFO = [ 
   { id: 'AI00'}, { id: 'AI01'}, { id: 'AI02'}, { id: 'AI03'},  { id: 'AI04'}, 
   { id: 'AI05'}, { id: 'AI06'}, { id: 'AI07'}, { id: 'AI08'},  { id: 'AI09'}, 
   { id: 'AI10'}, { id: 'AI11'}, { id: 'AI12'}, { id: 'AI13'},  { id: 'AI14'}, 
@@ -12,7 +12,27 @@ const analog_registers_info = [
   { id: 'AO16'} 
 ];
 
-const digital_outputs_info  = [ 
+const AO_REG_INFO = {
+  'AO01' :	{ title: 'Pressure relieve valve of FEED', name: 'VR1'},
+  'AO02' :	{ title: 'Pressure relieve valve for H20', name: 'VR2'}, 
+  'AO03' :	{ title: 'Pressure relieve valve for Ethanol', name: 'VR3'},
+  'AO04' :	{ title: 'Pressure reducing valve for H20', name: 'VR4'},
+  'AO05' :	{ title: 'FC4 PID feedback', name: 'FC4'}, 
+  'AO06' :	{ title: 'FC5 PID feedback', name: 'FC5'}, 
+  'AO07' :	{ title: 'FC6 PID feedback', name: 'FC6'}, 
+  'AO08' :	{ title: 'Proportional flow control valve VP1', name: 'VP1'},
+  'AO09' :	{ title: 'Proportional flow control valve VP2', name: 'VP2'},
+  'AO10' :	{ title: 'Proportional flow control valve VP3', name: 'VP3'},
+  'AO11' :	{ title: 'Proportional flow control valve VP4', name: 'VP4'},
+  'AO12' :	{ title: 'Proportional flow control valve VP5', name: 'VP5'},
+  'AO13' :	{ title: 'Proportional flow control valve VP6', name: 'VP6'},
+  'AO14' :	{ title: 'Proportional flow control valve VP7', name: 'VP7'},
+  'AO15' :	{ title: 'reserved', name: '_reserved 1'},
+  'AO16' :	{ title: 'reserved', name: '_reserved 2'},
+};
+
+
+const DO_REG_INFO  = [ 
   { id: 'DO00', addr: 16, state: null}, { id: 'DO01', addr: 17, state: null}, 
   { id: 'DO02', addr: 18, state: null}, { id: 'DO03', addr: 19, state: null}, 
   { id: 'DO04', addr: 20, state: null}, { id: 'DO05', addr: 21, state: null},
@@ -41,7 +61,7 @@ const digital_outputs_info  = [
   { id: 'DO50', addr: 10, state: null}, { id: 'DO51', addr: 11, state: null}
 ];
 
-const digital_inputs_info  = [ 
+const DI_INFO  = [ 
   { id: 'DI00', state: null}, { id: 'DI01', state: null}, 
   { id: 'DI02', state: null}, { id: 'DI03', state: null}, 
   { id: 'DI04', state: null}, { id: 'DI05', state: null},
@@ -52,7 +72,7 @@ const digital_inputs_info  = [
   { id: 'DI14', state: null}, { id: 'DI15', state: null}
 ]; 
 
-const sensors_info = {
+const SENSORS_INFO = {
 //ANALOG INPUTS
   'AI00' :	{title: 'Feed Line Output Pressure', name: 'DPT1-1'},
   'AI01' :	{title: 'Water Line Output Pressure', name: 'DPT4-1'},
@@ -91,22 +111,22 @@ const sensors_info = {
   'AI34' :	{title: 'Ethanol temperature', name: 'DT3'},
   'AI35' :	{title: 'Cabinet temperature', name: 'DT4'},
 //ANALOG OUTPUTS
-  'AO01' :	{title: 'Pressure relieve valve of FEED', name: 'VR1'},
-  'AO02' :	{title: 'Pressure relieve valve for H20', name: 'VR2'}, 
-  'AO03' :	{title: 'Pressure relieve valve for Ethanol', name: 'VR3'},
-  'AO04' :	{title: 'Pressure reducing valve for H20', name: 'VR4'},
-  'AO05' :	{title: 'FC4 PID feedback', name: 'FC4'}, 
-  'AO06' :	{title: 'FC5 PID feedback', name: 'FC5'}, 
-  'AO07' :	{title: 'FC6 PID feedback', name: 'FC6'}, 
-  'AO08' :	{title: 'Proportional flow control valve VP1', name: 'VP1'},
-  'AO09' :	{title: 'Proportional flow control valve VP2', name: 'VP2'},
-  'AO10' :	{title: 'Proportional flow control valve VP3', name: 'VP3'},
-  'AO11' :	{title: 'Proportional flow control valve VP4', name: 'VP4'},
-  'AO12' :	{title: 'Proportional flow control valve VP5', name: 'VP5'},
-  'AO13' :	{title: 'Proportional flow control valve VP6', name: 'VP6'},
-  'AO14' :	{title: 'Proportional flow control valve VP7', name: 'VP7'},
-  'AO15' :	{title: 'reserved', name: '_reserved 1'},
-  'AO16' :	{title: 'reserved', name: '_reserved 2'},
+  'AO01' :	AO_REG_INFO[ 'AO01'],
+  'AO02' :	AO_REG_INFO[ 'AO02'],
+  'AO03' :	AO_REG_INFO[ 'AO03'],
+  'AO04' :	AO_REG_INFO[ 'AO04'],
+  'AO05' :	AO_REG_INFO[ 'AO05'],
+  'AO06' :	AO_REG_INFO[ 'AO06'], 
+  'AO07' :	AO_REG_INFO[ 'AO07'], 
+  'AO08' :	AO_REG_INFO[ 'AO08'],
+  'AO09' :	AO_REG_INFO[ 'AO09'],
+  'AO10' :  AO_REG_INFO[ 'AO10'],
+  'AO11' :  AO_REG_INFO[ 'AO11'],
+  'AO12' :	AO_REG_INFO[ 'AO12'],
+  'AO13' :	AO_REG_INFO[ 'AO13'],
+  'AO14' :	AO_REG_INFO[ 'AO14'],
+  'AO15' :	AO_REG_INFO[ 'AO15'],
+  'AO16' :	AO_REG_INFO[ 'AO16'],
 //DIGITAL INPUTS
   'DI00' :  {title: 'Hi Level Feed', name: 'DL1'},
   'DI01' :  {title: 'Low Level Feed', name: 'DL2'},

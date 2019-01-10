@@ -6,11 +6,12 @@ var app = new Vue({
   data: {
     message: 'Hello from Delta!' + new Date().toLocaleString(),
     deltaRegisters: {},
-    digitalInputs: [],
-    digitalOutputs: [],
-    deltaValues: analog_registers_info,
-    deltaOutputs: digital_outputs_info, 
-    deltaInputs: digital_inputs_info, 
+    binDI: [],
+    binDO: [],
+    deltaValues: ANALOG_REG_INFO,
+    deltaDO: DO_REG_INFO, 
+    deltaAO: AO_REG_INFO,
+    deltaInputs: DI_INFO, 
     ws_connection: null,
     status: {delta: 'initialization', udp1_status:'', udp2_status:'', udp3_status:''},
   },
@@ -25,23 +26,23 @@ var app = new Vue({
         
       vm.deltaValues.forEach(function(dv, i, arr) {
         arr[i].values.unshift( newReg[dv.id] );
-        arr[i].values.length = MAX_VALUES_ARRAY_SIZE;
+        arr[i].values.splice( MAX_VALUES_ARRAY_SIZE );
       });
      
       var int8_to_bin = (d) => { return (d + 256).toString(2).substr(1,8).split('').reverse() };
       var int16_to_bin = (d) => { return (d + 65536).toString(2).substr(1,16).split('').reverse() };
 
       var d_in = [newReg.DIX1, newReg.DIX2];
-      vm.digitalInputs = [].concat(...d_in.map( int8_to_bin ));
+      vm.binDI = [].concat(...d_in.map( int8_to_bin ));
         
       var d_out = [newReg.DOY0, newReg.DOY1, newReg.DOY2, newReg.DOY3, newReg.DOY4];
-      vm.digitalOutputs = [].concat(...d_out.map( int16_to_bin ));
+      vm.binDO = [].concat(...d_out.map( int16_to_bin ));
 
-      vm.deltaOutputs.forEach(function(dout, i, arr) {
-        arr[i].state = vm.digitalOutputs[dout.addr];
+      vm.deltaDO.forEach(function(dout, i, arr) {
+        arr[i].state = vm.binDO[dout.addr];
       });
       vm.deltaInputs.forEach(function(dout, i, arr) {
-        arr[i].state = vm.digitalInputs[dout['id'].substr(2,2)-0];
+        arr[i].state = vm.binDI[dout['id'].substr(2,2)-0];
       });
     }
   },
@@ -69,11 +70,18 @@ var app = new Vue({
         });
     },
 
-    sendNewDOutputState: function(dOut){
+    sendNewDOutputState: function(){
       //send command to Delta
       var vm = this;
-      vm.digitalOutputs[dOut.addr] = vm.digitalOutputs[dOut.addr] == '1' ? '0' : '1';
-      var bin_s =  vm.digitalOutputs.join('');
+      //vm.binDO[dOut.addr] = vm.binDO[dOut.addr] == '1' ? '0' : '1';
+
+      vm.deltaDO.forEach(function(dOut, i, arr) {
+        if (dOut.command != null) {
+          vm.binDO[dOut.addr] = dOut.command 
+        }
+      });
+
+      var bin_s =  vm.binDO.join('');
       var make16bNumbers = function(){
         var arr = [];
         for (let i=0; i < 5; i++){
@@ -82,12 +90,37 @@ var app = new Vue({
         }
         return arr;
       };
-      vm.ws_connection.send( make16bNumbers() );
+
+      var analogOutputs = [];
+      for (let i=1; i<=16; i++){
+        analogOutputs[i-1] = i < 10 ? vm.deltaAO["AO0"+i].setV : 
+                                      vm.deltaAO["AO"+i].setV
+      };
+      var sendingArray = ['UDP1'].concat( make16bNumbers() );
+      console.log(sendingArray.concat(analogOutputs));
+      
+      vm.ws_connection.send( sendingArray.concat(analogOutputs) );
+      vm.clearOutputSelection();
     },
 
     changeDOutputState: function(dOut){
+      dOut.command = dOut.command == null ? 1 :
+                     dOut.command == 1 ? 0 : null;
+    },
 
+    clearOutputSelection: function(){
+      this.deltaDO.forEach(function(dOut, i, arr) {
+        dOut.command = null;
+      });
+      for (let aOut in this.deltaAO){
+        this.deltaAO[aOut].setV = null;
+      }
+    },
+    
+    setAnalogValue: function(aOut){
+      this.deltaAO[aOut].setV = null;
     }
+    
   },
 
   created() {
@@ -103,24 +136,23 @@ var app = new Vue({
     };
     vm.ws_connection.onmessage = function(msg) {
       try {
-        console.log('ws <----');
         vm.deltaRegisters = JSON.parse( msg.data );
       } catch(e) {
         console.debug(e); //error
       }
-      //vm.deltaRegisters = JSON.parse( msg.data );
     };
 
     var update_delta_registers = function(delta_register) {
       delta_register.forEach(function(dv, i, arr) {
-        arr[i].title = sensors_info[dv.id].title,
-        arr[i].name  = sensors_info[dv.id].name; 
+        arr[i].title = SENSORS_INFO[dv.id].title,
+        arr[i].name  = SENSORS_INFO[dv.id].name; 
         arr[i].values = [];
+        arr[i].command = null;
       });
     };
 
     update_delta_registers(vm.deltaValues);
-    update_delta_registers(vm.deltaOutputs);
+    update_delta_registers(vm.deltaDO);
     update_delta_registers(vm.deltaInputs);
 
   }

@@ -95,6 +95,24 @@ var send_to_ws = function(){
   }
 }
 
+var prepare_data = function(data){
+  var arr = data.split(',');
+  if (arr[0] == 'UDP1') {
+    arr.shift();
+    arr = arr.map( function(d) {
+      let n = parseInt(d);
+      return isNaN(n) ? -1 : n
+    }); 
+
+    const MAX_OUTPUT_BUFFER = 30;
+    for (let i = arr.length; i < MAX_OUTPUT_BUFFER; i++){
+      arr.push(-1);
+    };
+    return arr
+  }  
+  return null;
+}
+
 wss.on('connection', client => {
   ws_connection = client;
 
@@ -105,12 +123,11 @@ wss.on('connection', client => {
 
   ws_connection.on('message', data => {
     console.log(`Received message => ${data}`);
-    var arr = data.split(',').map( (d) => {return parseInt(d)} ); 
-    console.log( arr );
-    
-    if ( arr.length == 5) {
-      sendDataToDelta(udp1.server, arr);
-    }
+    var res = prepare_data(data);
+    console.log( res );
+    if (res){
+      sendDataToDelta(udp1.server, res);
+    };  
   })
 
   ws_connection.onclose = function() {
