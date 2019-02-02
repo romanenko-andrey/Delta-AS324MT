@@ -72,16 +72,20 @@ udp4.server.bind(settings.UDP4_PORT);
 
 var c_i = 0;
 var log_timer = setInterval( () => {
-  var test_connection = (stat) => stat == "active" ? "checking" : "stop";
+  var testConnection = (stat) => stat == "active" ? "checking" : "stop";
   var dr = deltaRegisters;
   var rs = real_time_sensors;
 
-  console.log(moment().format('LTS'), dr.udp1_status, dr.udp2_status, dr.udp3_status, rs.udp4_status);
+  console.log(moment().format('LTS'), 
+              'UDP1', dr.udp1_status, '& get', dr.udp1_packets, 'pkgs; ',
+              'UDP2', dr.udp2_status, '& get', dr.udp2_packets, 'pkgs; ',
+              'UDP3', dr.udp3_status, '& get', dr.udp3_packets, 'pkgs; ',
+              'UDP4', rs.udp4_status, '& get', rs.udp4_packets, 'pkgs; ');
 
-  dr.udp1_status = test_connection( dr.udp1_status );
-  dr.udp2_status = test_connection( dr.udp2_status );
-  dr.udp3_status = test_connection( dr.udp3_status );
-  rs.udp4_status = test_connection( rs.udp4_status );
+  dr.udp1_status = testConnection( dr.udp1_status );
+  dr.udp2_status = testConnection( dr.udp2_status );
+  dr.udp3_status = testConnection( dr.udp3_status );
+  rs.udp4_status = testConnection( rs.udp4_status );
 
   if (ws_connection) {
     c_i += 1;
@@ -89,13 +93,13 @@ var log_timer = setInterval( () => {
   }
 }, settings.LOG_TIMER_INTERVAL);
 
-var send_to_ws = function(){
+var sendWStoClient = function(){
   if (ws_connection) {
     ws_connection.send(JSON.stringify(deltaRegisters));
   }
 }
 
-var prepare_data = function(data){
+var prepareData = function(data){
   var arr = data.split(',');
   if (arr[0] == 'UDP1') {
     arr.shift();
@@ -117,13 +121,14 @@ wss.on('connection', client => {
   ws_connection = client;
 
   udp1.server.on('message', (msg, rinfo) => {
-    //console.log(`server got from msg: `);
-    send_to_ws();
+    if (ws_connection) {
+      sendWStoClient();
+    };
   });
 
   ws_connection.on('message', data => {
     console.log(`Received message => ${data}`);
-    var res = prepare_data(data);
+    var res = prepareData(data);
     console.log( res );
     if (res){
       sendDataToDelta(udp1.server, res);
@@ -134,9 +139,6 @@ wss.on('connection', client => {
     console.log('echo-protocol Client Closed');
     ws_connection = null;
   }
-  
-  ws_connection.send('ho!')
-
 });
 
 
