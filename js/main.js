@@ -121,13 +121,9 @@ var app = new Vue({
     },
 
     clearOutputSelection: function () {
-      //this.deltaDO.forEach(function (dOut) {
-      //  dOut.command = null;
-      //});
       this.deltaDO.forEach( (dOut) => {dOut.command = null} );
-      
       for (let aOut in this.deltaAO) {
-        this.deltaAO[aOut].setV = null;
+        this.deltaAO[aOut].setV = null
       }
     },
 
