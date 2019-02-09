@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const ANALOG_REG_INFO = [ 
   { id: 'AI00'}, { id: 'AI01'}, { id: 'AI02'}, { id: 'AI03'},  { id: 'AI04'}, 
   { id: 'AI05'}, { id: 'AI06'}, { id: 'AI07'}, { id: 'AI08'},  { id: 'AI09'}, 
@@ -110,7 +111,7 @@ const SENSORS_INFO = {
   'AI33' :	{title: 'Water temperature', name: 'DT2'},
   'AI34' :	{title: 'Ethanol temperature', name: 'DT3'},
   'AI35' :	{title: 'Cabinet temperature', name: 'DT4'},
-//ANALOG OUTPUTS
+  //ANALOG OUTPUTS
   'AO01' :	AO_REG_INFO[ 'AO01'],
   'AO02' :	AO_REG_INFO[ 'AO02'],
   'AO03' :	AO_REG_INFO[ 'AO03'],
@@ -127,7 +128,7 @@ const SENSORS_INFO = {
   'AO14' :	AO_REG_INFO[ 'AO14'],
   'AO15' :	AO_REG_INFO[ 'AO15'],
   'AO16' :	AO_REG_INFO[ 'AO16'],
-//DIGITAL INPUTS
+  //DIGITAL INPUTS
   'DI00' :  {title: 'Hi Level Feed', name: 'DL1'},
   'DI01' :  {title: 'Low Level Feed', name: 'DL2'},
   'DI02' :  {title: 'Hi Level H20', name: 'DL3'},
@@ -144,7 +145,7 @@ const SENSORS_INFO = {
   'DI13' :  {title: 'Digital Amplifier OK #6', name: 'DA6ok'},
   'DI14' :  {title: 'Digital Amplifier OK #7', name: 'DA7ok'},
   'DI15' :  {title: 'reserved', name: '_DI15'},
-//DIGITAL OUTPUTS
+  //DIGITAL OUTPUTS
   'DO00' :  {title: 'Inlet pump for Ethanol', name: 'PF1'},
   'DO01' :  {title: 'Inlet pump for H20', name: 'PF2'}, 
   'DO02' :  {title: 'Inlet pump for Feed', name: 'PF3'}, 

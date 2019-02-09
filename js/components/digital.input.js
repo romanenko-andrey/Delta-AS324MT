@@ -1,6 +1,6 @@
-Vue.component("digital-input", {
-	props: ["input"],
-	template: `
+Vue.component('"digital-input', {
+  props: ['input'],
+  template: `
 		<div class="grid-item" :title="input.title">
 			<div class="grid-cell--round" :style="setColor()">
 				<span
@@ -14,7 +14,7 @@ Vue.component("digital-input", {
     setColor: function(){
       return {
         background: this.input.state == '1' ? 'red' : 'gray'
-      }
+      };
     }
   }
-})
+});

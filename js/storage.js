@@ -1,13 +1,14 @@
+/* eslint-disable no-unused-vars */
 const start_v0 = 0;
 const start_koeff = 3.13E-4;
 
 Storage.prototype.setObject = function(key, value) {
   this.setItem(key, JSON.stringify(value));
-}
+};
 
 Storage.prototype.getObject = function(key) {
   return JSON.parse(this.getItem(key));
-}
+};
 
 
 if(!localStorage.getItem('AO01')) {
@@ -35,6 +36,6 @@ function initStorage() {
 
 function saveToLocalStorage(data) {
   for (let aOut in data){
-    localStorage.setObject(aOut, {v0: data[aOut].v0, koeff: data[aOut].koeff})
+    localStorage.setObject(aOut, {v0: data[aOut].v0, koeff: data[aOut].koeff});
   }
 }

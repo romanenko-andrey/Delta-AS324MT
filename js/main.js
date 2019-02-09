@@ -1,22 +1,25 @@
+/* eslint-disable no-console */
+/* eslint-disable no-undef */
+'use strict';
 const MAX_VALUES_ARRAY_SIZE = 3;
-const I603_TIMER_INTERVAL = 25; //(ms) See in HWCONFIG PLC
-const WS_URL = 'ws://192.168.1.103:3040'
+const I603_TIMER_INTERVAL   = 25; //(ms) See in HWCONFIG PLC
+const WS_URL                = 'ws://192.168.1.103:3040';
 
 var app = new Vue({
   el: '#app',
   data: {
     deltaRegisters: {},
-    binDI: [],
-    binDO: [],
-    deltaValues: ANALOG_REG_INFO,
-    deltaDO: DO_REG_INFO,
-    deltaAO: AO_REG_INFO,
-    deltaInputs: DI_INFO,
-    ws_connection: null,
-    status: { delta: 'initialization', udp1_status: '', udp2_status: '', udp3_status: '' },
+    binDI         : [],
+    binDO         : [],
+    deltaValues   : ANALOG_REG_INFO,
+    deltaDO       : DO_REG_INFO,
+    deltaAO       : AO_REG_INFO,
+    deltaInputs   : DI_INFO,
+    ws_connection : null,
+    status        : { delta: 'initialization', udp1_status: '', udp2_status: '', udp3_status: '' },
   },
   watch: {
-    deltaRegisters: function (newReg, _) {
+    deltaRegisters: function (newReg) {
       var vm = this;
       vm.status.delta = 'Delta is Ok!';
 
@@ -29,8 +32,8 @@ var app = new Vue({
         arr[i].values.splice(MAX_VALUES_ARRAY_SIZE);
       });
 
-      var int8_to_bin = (d) => { return (d + 256).toString(2).substr(1, 8).split('').reverse() };
-      var int16_to_bin = (d) => { return (d + 65536).toString(2).substr(1, 16).split('').reverse() };
+      var int8_to_bin = (d) => { return (d + 256).toString(2).substr(1, 8).split('').reverse(); };
+      var int16_to_bin = (d) => { return (d + 65536).toString(2).substr(1, 16).split('').reverse(); };
 
       var d_in = [newReg.DIX1, newReg.DIX2];
       vm.binDI = [].concat(...d_in.map(int8_to_bin));
@@ -53,7 +56,7 @@ var app = new Vue({
           parseFloat(vm.deltaAO[aOut].koeff) * newReg[aOut];
 
         let av = vm.deltaAO[aOut].analogValue;
-        vm.deltaAO[aOut].strAnalogValue = isNaN(av) ? av : av.toFixed(2)
+        vm.deltaAO[aOut].strAnalogValue = isNaN(av) ? av : av.toFixed(2);
       }
     }
   },
@@ -84,7 +87,7 @@ var app = new Vue({
 
       vm.deltaDO.forEach(function (dOut/*, i, arr*/) {
         if (dOut.command != null) {
-          vm.binDO[dOut.addr] = dOut.command
+          vm.binDO[dOut.addr] = dOut.command;
         }
       });
 
@@ -100,14 +103,15 @@ var app = new Vue({
 
       var analogOutputs = [];
       for (let i = 1; i <= 16; i++) {
-        let ao = i < 10 ? "AO0" + i : "AO" + i;
+        let ao = i < 10 ? 'AO0' + i : 'AO' + i;
         let result = (vm.deltaAO[ao].setV - parseFloat(vm.deltaAO[ao].v0))
           / parseFloat(vm.deltaAO[ao].koeff);
         if ((vm.deltaAO[ao].setV == null) || isNaN(result) || (result > 32767)) {
           result = -1;
         }
         analogOutputs[i - 1] = parseInt(result);
-      };
+      }
+
       var sendingArray = ['UDP1'].concat(make16bNumbers());
       console.log(sendingArray.concat(analogOutputs));
 
@@ -121,9 +125,9 @@ var app = new Vue({
     },
 
     clearOutputSelection: function () {
-      this.deltaDO.forEach( (dOut) => {dOut.command = null} );
+      this.deltaDO.forEach( (dOut) => {dOut.command = null;} );
       for (let aOut in this.deltaAO) {
-        this.deltaAO[aOut].setV = null
+        this.deltaAO[aOut].setV = null;
       }
     },
 
@@ -150,11 +154,11 @@ var app = new Vue({
     vm.ws_connection.onopen = function () {
       console.log('WS connection opened');
       vm.ws_connection.send('Ok');
-    }
+    };
 
     vm.ws_connection.onclose = function (eventclose) {
-      console.log('WS connection closed: ' + vm.eventclose);
-    }
+      console.log('WS connection closed: ' + eventclose);
+    };
 
     vm.ws_connection.onmessage = function (msg) {
       try {
@@ -162,23 +166,23 @@ var app = new Vue({
       } catch (e) {
         console.debug(e); //error
       }
-    }
+    };
 
     var update_delta_registers = function (delta_register) {
       delta_register.forEach(function (dv, i, arr) {
-        arr[i].title = SENSORS_INFO[dv.id].title,
-          arr[i].name = SENSORS_INFO[dv.id].name;
-        arr[i].values = [];
+        arr[i].title   = SENSORS_INFO[dv.id].title,
+        arr[i].name    = SENSORS_INFO[dv.id].name;
+        arr[i].values  = [];
         arr[i].command = null;
       });
-    }
+    };
 
     update_delta_registers(vm.deltaValues);
     update_delta_registers(vm.deltaDO);
     update_delta_registers(vm.deltaInputs);
 
     for (let aOut in vm.deltaAO) {
-      vm.deltaAO[aOut].v0 = localStorage.getObject(aOut).v0;
+      vm.deltaAO[aOut].v0    = localStorage.getObject(aOut).v0;
       vm.deltaAO[aOut].koeff = localStorage.getObject(aOut).koeff;
     }
   }
