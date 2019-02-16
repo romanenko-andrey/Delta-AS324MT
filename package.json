@@ -2,10 +2,20 @@
     "name": "delta-chat",
     "version": "0.0.1",
     "description": "communication with DELTA AS324MT",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server",
+        "dev": "nodemon server"
+    },
+    "runCommands" : {
+        "start": "npm start",
+        "nodemon": "npm run dev"
+    },
     "dependencies": {
         "dotenv-safe": "^6.1.0",
         "express": "^4.16.3",
         "moment": "^2.23.0",
+        "uuid": "^3.3.2",
         "ws": "^6.1.2"
     },
     "devDependencies": {
@@ -14,6 +24,7 @@
         "eslint-plugin-import": "^2.14.0",
         "eslint-plugin-node": "^8.0.0",
         "eslint-plugin-promise": "^4.0.1",
-        "eslint-plugin-standard": "^4.0.0"
+        "eslint-plugin-standard": "^4.0.0",
+        "nodemon": "^1.18.10"
     }
 }

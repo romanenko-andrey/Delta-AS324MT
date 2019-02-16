@@ -1,4 +1,4 @@
-Vue.component('"digital-input', {
+Vue.component('digital-input', {
   props: ['input'],
   template: `
 		<div class="grid-item" :title="input.title">

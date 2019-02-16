@@ -5,8 +5,8 @@
 'use strict';
 
 const settings = require('./settings');
-var moment = require('moment');
-
+const moment = require('moment');
+const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -45,7 +45,7 @@ http_server.on('listening', () => {
 });
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 app.get('/info', (req, res) => {
@@ -61,7 +61,7 @@ app.get('/writeDOutputs', (req, res) => {
   res.json(data);
 });
 
-app.use('/', express.static(__dirname + '/'));
+app.use('/', express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
 http_server.listen(settings.HTTP_PORT);
@@ -72,16 +72,16 @@ udp3.server.bind(settings.UDP3_PORT);
 udp4.server.bind(settings.UDP4_PORT);
 
 
-var virtual_reg = JSON.parse('{"udp1_status":"active","udp2_status":"active","udp3_status":"active","AI25":-3,"AI26":12352,"AI27":7222,"AI28":0,"AI29":0,"AI30":0,"AI31":0,"DOY0":21845,"DOY1":37451,"DOY2":55663,"DOY3":61166,"DOY4":43690,"DIX0":0,"DIX1":128,"DIX2":0,"AO01":10223,"AO02":27252,"AO03":6389,"AO04":8000,"AO05":10000,"AO06":12000,"AO07":14000,"AO08":16000,"AO09":18000,"AO10":20000,"udp2_packets":1674,"AO11":22000,"AO12":24000,"AO13":26000,"AO14":28000,"AO15":30000,"AO16":32000,"AI32":0,"AI33":0,"AI34":0,"AI35":0,"GTCN":3736940,"udp3_packets":1674,"AI00":6364,"AI01":-9,"AI02":-4,"AI03":-8,"AI04":6346,"AI05":1,"AI06":-6,"AI07":15886,"AI08":-10,"AI09":-5,"AI10":18580,"AI11":12718,"AI12":6389,"AI13":11801,"AI14":25336,"AI15":22578,"AI16":-14,"AI17":-11,"AI18":3900,"AI19":4566,"AI20":6390,"AI21":11715,"AI22":5010,"AI23":19252,"AI24":-6,"udp1_packets":1674,"ws_count":368}');
+var virtual_reg = {};
+fs.readFile(__dirname + '/deltaRegistresExample.json', (err, data) => {
+  virtual_reg = err ? {'error': 'no find json example file'} : JSON.parse(data)
+});
 
 
-var c_i = 0;
 var log_timer = setInterval( () => {
   var testConnection = (stat) => stat == 'active' ? 'checking' : 'stop';
   var dr = deltaRegisters;
   var rs = real_time_sensors;
-
-
 
   console.log(moment().format('LTS'), 
     'UDP1', dr.udp1_status, '& get', dr.udp1_packets, 'pkgs; ',
@@ -95,22 +95,12 @@ var log_timer = setInterval( () => {
   rs.udp4_status = testConnection( rs.udp4_status );
 
   if (ws_connection) {
-    c_i += 1;
-    deltaRegisters.ws_count = c_i;
     virtual_reg.GTCN = parseInt(virtual_reg.GTCN) + 40;
-    virtual_reg.AO01 = parseInt(virtual_reg.AO01) + 200;
-    ws_connection.send(JSON.stringify(virtual_reg));
+    //uncomment all for virtual PLC
+    //virtual_reg.AO01 = parseInt(virtual_reg.AO01) + 50;
+    //ws_connection.send(JSON.stringify(virtual_reg));
   }
 }, settings.LOG_TIMER_INTERVAL);
-
-var sendWStoClient = function(){
-
-
-  if (ws_connection) {
-    //ws_connection.send(JSON.stringify(deltaRegisters));
-    //ws_connection.send(virtual_reg);
-  }
-};
 
 var prepareData = function(data){
   var arr = data.split(',');
@@ -135,7 +125,8 @@ wss.on('connection', client => {
 
   udp1.server.on('message', (msg, rinfo) => {
     if (ws_connection) {
-      sendWStoClient();
+      //sendWStoClient();
+      ws_connection.send(JSON.stringify(deltaRegisters));
     }
   });
 
