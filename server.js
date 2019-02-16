@@ -7,6 +7,7 @@
 const settings = require('./settings');
 const moment = require('moment');
 const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -45,7 +46,7 @@ http_server.on('listening', () => {
 });
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(path.join(__dirname, '/public/index.html'));
 });
 
 app.get('/info', (req, res) => {
@@ -61,7 +62,7 @@ app.get('/writeDOutputs', (req, res) => {
   res.json(data);
 });
 
-app.use('/', express.static(__dirname + '/public'));
+app.use('/', express.static(path.join(__dirname, '/public')));
 app.use(bodyParser.json());
 
 http_server.listen(settings.HTTP_PORT);
@@ -73,12 +74,12 @@ udp4.server.bind(settings.UDP4_PORT);
 
 
 var virtual_reg = {};
-fs.readFile(__dirname + '/deltaRegistresExample.json', (err, data) => {
-  virtual_reg = err ? {'error': 'no find json example file'} : JSON.parse(data)
+fs.readFile(path.join(__dirname,'/deltaRegistresExample.json'), (err, data) => {
+  virtual_reg = err ? {'error': 'no find json example file'} : JSON.parse(data);
 });
 
 
-var log_timer = setInterval( () => {
+setInterval( () => {
   var testConnection = (stat) => stat == 'active' ? 'checking' : 'stop';
   var dr = deltaRegisters;
   var rs = real_time_sensors;
@@ -95,9 +96,9 @@ var log_timer = setInterval( () => {
   rs.udp4_status = testConnection( rs.udp4_status );
 
   if (ws_connection) {
-    virtual_reg.GTCN = parseInt(virtual_reg.GTCN) + 40;
+    virtual_reg.GTCN = parseInt(virtual_reg.GTCN || 0) + 40;
     //uncomment all for virtual PLC
-    //virtual_reg.AO01 = parseInt(virtual_reg.AO01) + 50;
+    //virtual_reg.AO01 = parseInt(virtual_reg.AO01 || 0) + 50;
     //ws_connection.send(JSON.stringify(virtual_reg));
   }
 }, settings.LOG_TIMER_INTERVAL);
@@ -123,7 +124,7 @@ var prepareData = function(data){
 wss.on('connection', client => {
   ws_connection = client;
 
-  udp1.server.on('message', (msg, rinfo) => {
+  udp1.server.on('message', () => {
     if (ws_connection) {
       //sendWStoClient();
       ws_connection.send(JSON.stringify(deltaRegisters));
