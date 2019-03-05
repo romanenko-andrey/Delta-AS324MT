@@ -26,10 +26,16 @@ var app = new Vue({
       vm.status.udp1_status = newReg.udp1_status;
       vm.status.udp2_status = newReg.udp2_status;
       vm.status.udp3_status = newReg.udp3_status;
-
+      
       vm.deltaValues.forEach(function (dv, i, arr) {
-        arr[i].values.unshift(newReg[dv.id]);
-        arr[i].values.splice(MAX_VALUES_ARRAY_SIZE);
+        if (arr[i].values){
+          arr[i].values.unshift(newReg[dv.id]);
+          arr[i].values.splice(MAX_VALUES_ARRAY_SIZE);
+          let sum = arr[i].values.reduce((x,y) => x + y, 0);
+          arr[i].average = Math.ceil(sum / MAX_VALUES_ARRAY_SIZE);
+        } else {
+          arr[i].values = [];
+        }
       });
 
       var int8_to_bin = (d) => { return (d + 256).toString(2).substr(1, 8).split('').reverse(); };
@@ -135,7 +141,8 @@ var app = new Vue({
       this.deltaAO[aOut].setV = null;
     },
 
-    saveToStorage: function () {
+    saveToStorage: function (x) {
+      console.log('save', x);
       saveToLocalStorage(this.deltaAO);
     },
 
@@ -172,8 +179,9 @@ var app = new Vue({
       delta_register.forEach(function (dv, i, arr) {
         arr[i].title   = SENSORS_INFO[dv.id].title,
         arr[i].name    = SENSORS_INFO[dv.id].name;
-        arr[i].values  = [];
-        arr[i].command = null;
+        //arr[i].values  = [];
+        arr[i].average = null;
+        //arr[i].command = null;
       });
     };
 

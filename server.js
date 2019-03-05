@@ -46,7 +46,7 @@ http_server.on('listening', () => {
 });
 
 app.get('/', function(req, res){
-  res.sendFile(path.join(__dirname, '/public/index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/info', (req, res) => {
@@ -62,7 +62,7 @@ app.get('/writeDOutputs', (req, res) => {
   res.json(data);
 });
 
-app.use('/', express.static(path.join(__dirname, '/public')));
+app.use('/', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 
 http_server.listen(settings.HTTP_PORT);
@@ -74,7 +74,7 @@ udp4.server.bind(settings.UDP4_PORT);
 
 
 var virtual_reg = {};
-fs.readFile(path.join(__dirname,'/deltaRegistresExample.json'), (err, data) => {
+fs.readFile(path.join(__dirname,'deltaRegistresExample.json'), (err, data) => {
   virtual_reg = err ? {'error': 'no find json example file'} : JSON.parse(data);
 });
 
